@@ -1,21 +1,21 @@
 # gptbot
 Телеграм-бот, работающий на воркерах cloudflare, включающий все LLM-модели openrouter
-Развёртывание:
+## Развёртывание:
 Вам понадобится:
 1. Учётная запись cloudflare - https://dash.cloudflare.com/login
 2. Учётная запись openrouter, желательно с положительным балансом и API токен от неё - https://openrouter.ai/settings/keys
 3. Учётная запись telegram
 4. Для работы веб поиска - api токен для поиска google + его ID, получить можно здесь: https://programmablesearchengine.google.com/controlpanel/all?hl=ru
 
-1. Создаём бота в телеграмм:
+## 1. Создаём бота в телеграмм:
 Переходим авторизованной учёткой в @BotFather и отправляем команду /newbot
 Даём имя нашему новому боту, по которому он будет доступен в телеграмм. Например usernamecloudgptbot - оно обязательно должно заканчиваться на bot
 Из ответного сообщения об успешной регистрации записываем токен.
-2. Получаем наш id в телеграмме для работы белого списка. Переходим в @getmyid_bot
+## 2. Получаем наш id в телеграмме для работы белого списка. Переходим в @getmyid_bot
 Нажимаем  /start
 Записываем свой userId
-3. Скачиваем файлы гитхаб проекта в папку на пк (https://github.com/Alfirine/gptbot/archive/refs/heads/main.zip или же git clone https://github.com/Alfirine/gptbot в консоли)
-4. Авторизуемся на cloudflare. Переходим в раздел Compute(Workers) Workers & Pages
+## 3. Скачиваем файлы гитхаб проекта в папку на пк (https://github.com/Alfirine/gptbot/archive/refs/heads/main.zip или же git clone https://github.com/Alfirine/gptbot в консоли)
+## 4. Авторизуемся на cloudflare. Переходим в раздел Compute(Workers) Workers & Pages
 ![image](https://github.com/user-attachments/assets/8a7b8b64-738a-4282-8a9a-cbc28c19927c)
 Нажимаем create, Start with Hello World!
 Даём название нашему боту - gptbot
