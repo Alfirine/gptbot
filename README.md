@@ -35,7 +35,7 @@
 ### Нажимаем deploy, после чего в верхнем правом углу на кнопку view this worker
 ![image](https://github.com/user-attachments/assets/109aff9a-29ea-4b72-b02f-1ecddda875bb)
 ### На открывшейся странице нажимаем кнопку click here для привязки вебхука.
-![image](https://github.com/user-attachments/assets/0e59a83b-9a5b-40b2-a273-99ee1f061862)
+![image](https://github.com/user-attachments/assets/e9601ede-93fb-4cf0-b5b8-423f351a3f51)
 ### Переходим в телеграмм, поиском находим нашего нового бота и добавляем к себе. 
 
 ### Команда /models позволяет выбрать определенную модель. Напротив названия модели будет указана цена за миллион входящих и исходящих токенов, в долларах.
