@@ -40,7 +40,6 @@
 
 ### Команда /models позволяет выбрать определенную модель. Напротив названия модели будет указана цена за миллион входящих и исходящих токенов, в долларах.
 ![image](https://github.com/user-attachments/assets/beb43bf6-4f85-4385-a13c-668993baf163)
-![image](https://github.com/user-attachments/assets/6c7e517e-0621-49c0-b365-86dd1da8c653)
 ### Команда /modelparams позволяет настроить параметры модели (активацию веб-поиска, кеширование запросов, максимальное количество токенов для одного сообщения, topP, topK и температуру)
-![image](https://github.com/user-attachments/assets/5f3526c8-ec0a-4d60-ab28-ac531d5aa81a)
+
 
