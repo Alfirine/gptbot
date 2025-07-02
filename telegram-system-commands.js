@@ -181,7 +181,7 @@ export class GetSystemPromptCommandHandler {
     
     const currentPrompt = context.USER_CONFIG.SYSTEM_INIT_MESSAGE;
     
-    if (!currentPrompt) {
+    if (!currentPrompt || currentPrompt === null || currentPrompt === undefined) {
       return sender.sendPlainText("Системный промпт не установлен. Используется промпт по умолчанию: \"" + ENV.I18N.env.system_init_message + "\"");
     }
     
