@@ -44,7 +44,7 @@ export class EnvironmentConfig {
     ];
     GOOGLE_API_KEY = "AIzaSyB5G-UXdHdCiygQjsIUfkIUpOtdP_00X50";
     GOOGLE_SEARCH_ENGINE_ID = "71f00319f5b8d4ff5";
-    BOT_MENU_COMMANDS = ["/help", "/new", "/models", "/modelparams"];
+    BOT_MENU_COMMANDS = ["/help", "/new", "/models", "/modelparams", "/getsystemprompt"];
     TELEGRAM_BOT_NAME = [];
     CHAT_GROUP_WHITE_LIST = [];
     GROUP_CHAT_BOT_ENABLE = true;
@@ -84,7 +84,10 @@ export const ru = {
         "echo": "Эхо-повтор сообщения",
         "models": "выбрать модель чата",
         "modelparams": "настроить параметры модели",
-        "updatemenu": "обновить меню команд бота"
+        "updatemenu": "обновить меню команд бота",
+        "setsystemprompt": "Установить системный промпт. Формат: /setsystemprompt ВАШЕ_СООБЩЕНИЕ",
+        "getsystemprompt": "Показать текущий системный промпт",
+        "clearsystemprompt": "Очистить системный промпт (вернуться к промпту по умолчанию)"
       },
       "new": {
         "new_chat_start": "Начат новый разговор"

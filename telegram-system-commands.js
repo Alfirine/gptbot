@@ -153,3 +153,54 @@ export class SystemCommandHandler {
     return sender.sendRichText(msg, "HTML");
   };
 }
+
+export class SetSystemPromptCommandHandler {
+  command = "/setsystemprompt";
+  needAuth = TELEGRAM_AUTH_CHECKER.shareModeGroup;
+  handle = async (message, subcommand, context) => {
+    const sender = MessageSender.fromMessage(context.SHARE_CONTEXT.botToken, message);
+    
+    if (!subcommand || subcommand.trim() === "") {
+      return sender.sendPlainText(ENV.I18N.command.help.setsystemprompt);
+    }
+    
+    try {
+      await context.execChangeAndSave({ SYSTEM_INIT_MESSAGE: subcommand.trim() });
+      return sender.sendPlainText("Системный промпт успешно установлен");
+    } catch (e) {
+      return sender.sendPlainText(`ОШИБКА: ${e.message}`);
+    }
+  };
+}
+
+export class GetSystemPromptCommandHandler {
+  command = "/getsystemprompt";
+  scopes = ["all_private_chats", "all_chat_administrators"];
+  handle = async (message, subcommand, context) => {
+    const sender = MessageSender.fromMessage(context.SHARE_CONTEXT.botToken, message);
+    
+    const currentPrompt = context.USER_CONFIG.SYSTEM_INIT_MESSAGE;
+    
+    if (!currentPrompt) {
+      return sender.sendPlainText("Системный промпт не установлен. Используется промпт по умолчанию: \"" + ENV.I18N.env.system_init_message + "\"");
+    }
+    
+    const msg = `<strong>Текущий системный промпт:</strong>\n<pre>${currentPrompt}</pre>`;
+    return sender.sendRichText(msg, "HTML");
+  };
+}
+
+export class ClearSystemPromptCommandHandler {
+  command = "/clearsystemprompt";
+  needAuth = TELEGRAM_AUTH_CHECKER.shareModeGroup;
+  handle = async (message, subcommand, context) => {
+    const sender = MessageSender.fromMessage(context.SHARE_CONTEXT.botToken, message);
+    
+    try {
+      await context.execChangeAndSave({ SYSTEM_INIT_MESSAGE: null });
+      return sender.sendPlainText("Системный промпт очищен. Теперь используется промпт по умолчанию.");
+    } catch (e) {
+      return sender.sendPlainText(`ОШИБКА: ${e.message}`);
+    }
+  };
+}

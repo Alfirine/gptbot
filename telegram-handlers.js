@@ -19,7 +19,10 @@ import {
   DelEnvCommandHandler,
   ClearEnvCommandHandler,
   VersionCommandHandler,
-  SystemCommandHandler
+  SystemCommandHandler,
+  SetSystemPromptCommandHandler,
+  GetSystemPromptCommandHandler,
+  ClearSystemPromptCommandHandler
 } from './telegram-system-commands.js';
 
 // Импорт из telegram-model-commands.js
@@ -57,6 +60,9 @@ export {
   ClearEnvCommandHandler,
   VersionCommandHandler,
   SystemCommandHandler,
+  SetSystemPromptCommandHandler,
+  GetSystemPromptCommandHandler,
+  ClearSystemPromptCommandHandler,
   
   // Из telegram-model-commands.js
   ModelsCommandHandler,
@@ -85,5 +91,8 @@ export const SYSTEM_COMMANDS = [
   new ModelsCommandHandler(),
   new ModelParamsCommandHandler(),
   new UpdateMenuCommandHandler(),
+  new SetSystemPromptCommandHandler(),
+  new GetSystemPromptCommandHandler(),
+  new ClearSystemPromptCommandHandler(),
   new HelpCommandHandler()
 ];

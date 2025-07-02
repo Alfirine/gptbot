@@ -95,7 +95,10 @@ import {
   DelEnvCommandHandler,
   ClearEnvCommandHandler,
   VersionCommandHandler,
-  SystemCommandHandler
+  SystemCommandHandler,
+  SetSystemPromptCommandHandler,
+  GetSystemPromptCommandHandler,
+  ClearSystemPromptCommandHandler
 } from './telegram-system-commands.js';
 
 import {
