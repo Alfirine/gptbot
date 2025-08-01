@@ -8,7 +8,7 @@ export class AgentShareConfig {
   
 export class OpenAIConfig {
     OPENAI_API_KEY = [];
-    OPENAI_CHAT_MODEL = "gpt-4o-mini";
+    OPENAI_CHAT_MODEL = "openai/gpt-4o";
     OPENAI_API_BASE = "https://openrouter.ai/api/v1";
     OPENAI_API_EXTRA_PARAMS = {};
     OPENAI_CHAT_MODELS_LIST = "";

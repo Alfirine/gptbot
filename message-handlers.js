@@ -167,6 +167,12 @@ The following is the referenced context: ${extraText}`;
       }
     }
   }
+  
+  // Если есть изображения, но нет текста, добавляем стандартный запрос на анализ
+  if (urls.length > 0 && !text.trim()) {
+    text = "Проанализируй это изображение и опиши его содержимое. Если на изображении есть текст, прочитай его полностью. Если это ноты, укажи названия нот и их расположение.";
+  }
+  
   const params = {
     role: "user",
     content: text
@@ -300,7 +306,7 @@ export class OldMessageFilter {
 
 export class MessageFilter {
   handle = async (message, context) => {
-    // Если есть текст или подпись — пропускаем дальше
+    // Если есть текст или подпись — пропускаем дальше для обработки в ChatHandler
     if (message.text) {
       return null;
     }
@@ -308,29 +314,23 @@ export class MessageFilter {
       return null;
     }
     
+    // Если есть изображение (фото или документ с изображением) — пропускаем дальше
+    if (message.photo && message.photo.length > 0) {
+      return null;
+    }
+    if (message.document && 
+        message.document.mime_type && 
+        message.document.mime_type.startsWith("image/")) {
+      return null;
+    }
+    
     const sender = MessageSender.fromMessage(context.SHARE_CONTEXT.botToken, message);
     let fileId = null;
     let mimeType = null;
-    let fileType = null; // Тип файла: 'image' или 'audio'
+    let fileType = null; // Тип файла: 'audio'
     
-    // Проверяем, есть ли в сообщении фото (JPEG и т.д.)
-    if (message.photo && message.photo.length > 0) {
-      // Берём наибольшее по размеру фото
-      const photoObj = message.photo[message.photo.length - 1];
-      fileId = photoObj.file_id;
-      mimeType = "image/jpeg"; // Telegram по умолчанию конвертирует в JPEG
-      fileType = 'image';
-    }
-    // Проверяем, есть ли документ (может быть PNG, GIF и другие форматы)
-    else if (message.document &&
-             message.document.mime_type &&
-             message.document.mime_type.startsWith("image/")) {
-      fileId = message.document.file_id;
-      mimeType = message.document.mime_type;
-      fileType = 'image';
-    }
     // Проверяем, есть ли голосовое сообщение
-    else if (message.voice) {
+    if (message.voice) {
       fileId = message.voice.file_id;
       mimeType = message.voice.mime_type || "audio/ogg";
       fileType = 'audio';
@@ -342,61 +342,14 @@ export class MessageFilter {
       fileType = 'audio';
     }
     
-    // Если нашли файл - обрабатываем его
-    if (fileId) {
-      try {
-        // Получаем ссылку на файл через Telegram API
-        const api = createTelegramBotAPI(context.SHARE_CONTEXT.botToken);
-        const file = await api.getFileWithReturns({ file_id: fileId });
-        
-        if (!file || !file.result || !file.result.file_path) {
-          return sender.sendPlainText("Ошибка: не удалось получить доступ к файлу");
-        }
-        
-        const filePath = file.result.file_path;
-        const fileUrl = `${context.USER_CONFIG.TELEGRAM_API_DOMAIN || "https://api.telegram.org"}/file/bot${context.SHARE_CONTEXT.botToken}/${filePath}`;
-        
-        // Скачиваем файл и конвертируем в base64
-        const fileResp = await fetch(fileUrl);
-        
-        if (!fileResp.ok) {
-          return sender.sendPlainText(`Ошибка скачивания файла: ${fileResp.status} ${fileResp.statusText}`);
-        }
-        
-        // Используем разные подходы для разных типов файлов
-        if (fileType === 'image') {
-          // Конвертируем файл в base64
-          const arrayBuffer = await fileResp.arrayBuffer();
-          const base64 = typeof Buffer !== "undefined"
-            ? Buffer.from(arrayBuffer).toString("base64")
-            : btoa(String.fromCharCode.apply(null, new Uint8Array(arrayBuffer)));
-          
-          const openai = new OpenAI();
-          
-          // Сначала отправим сообщение, что мы анализируем изображение
-          await sender.sendPlainText("Анализирую изображение...");
-          
-          // Определяем правильный MIME-тип для запроса
-          const dataUriMimeType = mimeType || "image/jpeg";
-          
-          // Анализируем изображение через OpenAI Vision
-          const resultText = await openai.analyzeImage(base64, context.USER_CONFIG, dataUriMimeType);
-          
-          // Отправляем результат пользователю
-          return sender.sendPlainText(resultText);
-        }
-        else if (fileType === 'audio') {
-          return sender.sendPlainText("Пожалуйста, отправьте ваш запрос текстом.");
-        }
-      } catch (e) {
-        console.error("Error processing file:", e);
-        return sender.sendPlainText(`Ошибка при обработке файла: ${e.message}`);
-      }
+    // Если нашли аудио файл - сообщаем, что не поддерживается
+    if (fileId && fileType === 'audio') {
+      return sender.sendPlainText("Пожалуйста, отправьте ваш запрос текстом.");
     }
     
     // Если формат не поддерживается, сообщим об этом
     return MessageSender.fromMessage(context.SHARE_CONTEXT.botToken, message)
-      .sendPlainText("Неподдерживаемый тип сообщения. Я могу обрабатывать только текст, изображения и голосовые сообщения.");
+      .sendPlainText("Неподдерживаемый тип сообщения. Я могу обрабатывать только текст и изображения.");
   };
 }
 

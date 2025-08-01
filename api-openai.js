@@ -64,7 +64,7 @@ export async function renderOpenAIMessage(item, supportImage) {
                 contents.push({ type: "image_url", image_url: { url: data.url } });
               }
             } else if (data.base64 && isSupportBase64) {
-              contents.push({ type: "image_base64", image_base64: { base64: data.base64 } });
+              contents.push({ type: "image_url", image_url: { url: `data:image/jpeg;base64,${data.base64}` } });
             }
           }
           break;
