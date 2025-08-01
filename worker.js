@@ -98,7 +98,9 @@ import {
   SystemCommandHandler,
   SetSystemPromptCommandHandler,
   GetSystemPromptCommandHandler,
-  ClearSystemPromptCommandHandler
+  ClearSystemPromptCommandHandler,
+  SetVisionModelCommandHandler,
+  GetVisionModelCommandHandler
 } from './telegram-system-commands.js';
 
 import {

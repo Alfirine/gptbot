@@ -204,3 +204,39 @@ export class ClearSystemPromptCommandHandler {
     }
   };
 }
+
+export class SetVisionModelCommandHandler {
+  command = "/setvisionmodel";
+  needAuth = TELEGRAM_AUTH_CHECKER.shareModeGroup;
+  handle = async (message, subcommand, context) => {
+    const sender = MessageSender.fromMessage(context.SHARE_CONTEXT.botToken, message);
+    
+    if (!subcommand || subcommand.trim() === "") {
+      return sender.sendPlainText(ENV.I18N.command.help.setvisionmodel);
+    }
+    
+    try {
+      await context.execChangeAndSave({ VISION_MODEL: subcommand.trim() });
+      return sender.sendPlainText(`Модель для распознавания изображений установлена: ${subcommand.trim()}`);
+    } catch (e) {
+      return sender.sendPlainText(`ОШИБКА: ${e.message}`);
+    }
+  };
+}
+
+export class GetVisionModelCommandHandler {
+  command = "/getvisionmodel";
+  scopes = ["all_private_chats", "all_chat_administrators"];
+  handle = async (message, subcommand, context) => {
+    const sender = MessageSender.fromMessage(context.SHARE_CONTEXT.botToken, message);
+    
+    const currentModel = context.USER_CONFIG.VISION_MODEL;
+    
+    if (!currentModel || currentModel === null || currentModel === undefined) {
+      return sender.sendPlainText("Модель для распознавания изображений не установлена. Используется модель по умолчанию: openai/gpt-4.1");
+    }
+    
+    const msg = `<strong>Текущая модель для распознавания изображений:</strong>\n<code>${currentModel}</code>`;
+    return sender.sendRichText(msg, "HTML");
+  };
+}

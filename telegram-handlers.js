@@ -22,7 +22,9 @@ import {
   SystemCommandHandler,
   SetSystemPromptCommandHandler,
   GetSystemPromptCommandHandler,
-  ClearSystemPromptCommandHandler
+  ClearSystemPromptCommandHandler,
+  SetVisionModelCommandHandler,
+  GetVisionModelCommandHandler
 } from './telegram-system-commands.js';
 
 // Импорт из telegram-model-commands.js
@@ -63,6 +65,8 @@ export {
   SetSystemPromptCommandHandler,
   GetSystemPromptCommandHandler,
   ClearSystemPromptCommandHandler,
+  SetVisionModelCommandHandler,
+  GetVisionModelCommandHandler,
   
   // Из telegram-model-commands.js
   ModelsCommandHandler,
@@ -94,5 +98,7 @@ export const SYSTEM_COMMANDS = [
   new SetSystemPromptCommandHandler(),
   new GetSystemPromptCommandHandler(),
   new ClearSystemPromptCommandHandler(),
+  new SetVisionModelCommandHandler(),
+  new GetVisionModelCommandHandler(),
   new HelpCommandHandler()
 ];

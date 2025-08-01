@@ -27,7 +27,7 @@ export class OpenAI {
   model = (ctx) => ctx.OPENAI_CHAT_MODEL;
   modelList = (ctx) => loadOpenAIModelList(ctx.OPENAI_CHAT_MODELS_LIST, ctx.OPENAI_API_BASE, bearerHeader(openAIApiKey(ctx)));
   
-  // Метод для анализа изображений с использованием GPT-4 Vision
+  // Метод для анализа изображений с использованием независимой модели
   analyzeImage = async (base64Image, context, mimeType = "image/jpeg") => {
         // Определяем URL API
         const url = `${context.OPENAI_API_BASE}/chat/completions`;
@@ -39,13 +39,8 @@ export class OpenAI {
             "Content-Type": "application/json"
         };
       
-        // Создаем тело запроса
-        let model = "openai/gpt-4o"; // Используем openai/gpt-4o, который поддерживает зрение
-        
-        // Можно настроить модель через параметры
-        if (context.OPENAI_VISION_MODEL) {
-            model = context.OPENAI_VISION_MODEL;
-        }
+        // Используем независимую модель для распознавания изображений
+        const model = context.VISION_MODEL || "openai/gpt-4.1";
         
         const body = {
             model: model,
