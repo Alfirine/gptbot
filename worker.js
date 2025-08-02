@@ -100,7 +100,8 @@ import {
   GetSystemPromptCommandHandler,
   ClearSystemPromptCommandHandler,
   SetVisionModelCommandHandler,
-  GetVisionModelCommandHandler
+  GetVisionModelCommandHandler,
+  SetSpeechKeyCommandHandler
 } from './telegram-system-commands.js';
 
 import {

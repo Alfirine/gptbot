@@ -6,6 +6,12 @@ import {
 } from './config.js';
 
 import {
+  recognizeSpeech,
+  extractAudioInfo,
+  isSupportedAudioFormat
+} from './api-speech.js';
+
+import {
   createTelegramBotAPI,
   MessageSender,
   TELEGRAM_AUTH_CHECKER,
@@ -154,6 +160,31 @@ export async function chatWithMessage(message, params, context, modifier) {
 export async function extractUserMessageItem(message, context) {
   let text = message.text || message.caption || "";
   const urls = await extractImageURL(extractImageFileID(message), context).then((u) => u ? [u] : []);
+  
+  // Проверяем наличие аудио контента и обрабатываем его
+  const audioInfo = extractAudioInfo(message);
+  const hasApiKey = !!(context.USER_CONFIG.GOOGLE_SPEECH_API_KEY || ENV.GOOGLE_SPEECH_API_KEY);
+  
+  if (audioInfo && hasApiKey && audioInfo.isSupported) {
+    try {
+      console.log('Processing audio message:', audioInfo);
+      const recognizedText = await recognizeSpeech(audioInfo.fileId, context.SHARE_CONTEXT.botToken, context);
+      
+      // Если есть текст в подписи, объединяем с распознанным
+      if (text.trim()) {
+        text = `${text}\n\nРаспознанный текст из аудиосообщения: ${recognizedText}`;
+      } else {
+        text = recognizedText;
+      }
+      
+      console.log('Audio recognized successfully:', recognizedText);
+    } catch (error) {
+      console.error('Speech recognition failed:', error);
+      // Если распознавание не удалось, возвращаем ошибку как текст
+      text = `Ошибка распознавания речи: ${error.message}`;
+    }
+  }
+  
   if (ENV.EXTRA_MESSAGE_CONTEXT && message.reply_to_message && message.reply_to_message.from && `${message.reply_to_message.from.id}` !== `${context.SHARE_CONTEXT.botId}`) {
     const extraText = message.reply_to_message.text || message.reply_to_message.caption || "";
     if (extraText) {
@@ -324,32 +355,29 @@ export class MessageFilter {
       return null;
     }
     
-    const sender = MessageSender.fromMessage(context.SHARE_CONTEXT.botToken, message);
-    let fileId = null;
-    let mimeType = null;
-    let fileType = null; // Тип файла: 'audio'
-    
-    // Проверяем, есть ли голосовое сообщение
-    if (message.voice) {
-      fileId = message.voice.file_id;
-      mimeType = message.voice.mime_type || "audio/ogg";
-      fileType = 'audio';
-    }
-    // Проверяем, есть ли аудио файл
-    else if (message.audio) {
-      fileId = message.audio.file_id;
-      mimeType = message.audio.mime_type || "audio/mpeg";
-      fileType = 'audio';
-    }
-    
-    // Если нашли аудио файл - сообщаем, что не поддерживается
-    if (fileId && fileType === 'audio') {
-      return sender.sendPlainText("Пожалуйста, отправьте ваш запрос текстом.");
+    // Проверяем наличие аудио контента
+    const audioInfo = extractAudioInfo(message);
+    if (audioInfo) {
+      // Проверяем, есть ли API ключ для распознавания речи
+      const hasApiKey = !!(context.USER_CONFIG.GOOGLE_SPEECH_API_KEY || ENV.GOOGLE_SPEECH_API_KEY);
+      
+      if (hasApiKey && audioInfo.isSupported) {
+        // Если есть API ключ и формат поддерживается, пропускаем дальше
+        return null;
+      }
+      
+      // Если нет API ключа или формат не поддерживается - отправляем сообщение
+      const sender = MessageSender.fromMessage(context.SHARE_CONTEXT.botToken, message);
+      if (!hasApiKey) {
+        return sender.sendPlainText("Для распознавания аудиосообщений необходимо установить API ключ Google Speech-to-Text. Используйте команду /setspeechkey");
+      } else {
+        return sender.sendPlainText("Неподдерживаемый формат аудио. Поддерживаются: OGG, MP3, WAV, FLAC.");
+      }
     }
     
     // Если формат не поддерживается, сообщим об этом
     return MessageSender.fromMessage(context.SHARE_CONTEXT.botToken, message)
-      .sendPlainText("Неподдерживаемый тип сообщения. Я могу обрабатывать только текст и изображения.");
+      .sendPlainText("Неподдерживаемый тип сообщения. Я могу обрабатывать только текст, изображения и аудиосообщения.");
   };
 }
 
@@ -359,6 +387,61 @@ export class CommandHandler {
       return await handleCommandMessage(message, context);
     }
     return null;
+  };
+}
+
+export class AudioHandler {
+  handle = async (message, context) => {
+    // Проверяем, есть ли аудио в сообщении
+    const audioInfo = extractAudioInfo(message);
+    const hasApiKey = !!(context.USER_CONFIG.GOOGLE_SPEECH_API_KEY || ENV.GOOGLE_SPEECH_API_KEY);
+    
+    if (!audioInfo || !hasApiKey || !audioInfo.isSupported) {
+      return null;
+    }
+
+    const sender = MessageSender.fromMessage(context.SHARE_CONTEXT.botToken, message);
+    
+    try {
+      // Отправляем сообщение о начале обработки
+      const processingMsg = await sender.sendPlainText("🎵 Обрабатываю аудиосообщение...").then((r) => r.json());
+      const processingSender = MessageSender.fromMessage(context.SHARE_CONTEXT.botToken, message);
+      processingSender.update({
+        message_id: processingMsg.result.message_id
+      });
+
+      // Показываем статус "записывает голосовое сообщение"
+      const api = createTelegramBotAPI(context.SHARE_CONTEXT.botToken);
+      setTimeout(() => api.sendChatAction({
+        chat_id: message.chat.id,
+        action: "record_voice"
+      }).catch(console.error), 0);
+
+      // Обрабатываем аудио и получаем текст
+      const params = await extractUserMessageItem(message, context);
+      
+      // Удаляем сообщение о обработке
+      try {
+        await api.deleteMessage({
+          chat_id: message.chat.id,
+          message_id: processingMsg.result.message_id
+        });
+      } catch (e) {
+        console.warn('Could not delete processing message:', e);
+      }
+
+      // Если произошла ошибка распознавания, отправляем сообщение об ошибке
+      if (params.content && typeof params.content === 'string' && params.content.startsWith('Ошибка распознавания речи:')) {
+        return sender.sendPlainText(params.content);
+      }
+
+      // Отправляем распознанный текст в LLM
+      return chatWithMessage(message, params, context, null);
+
+    } catch (error) {
+      console.error('Audio handler error:', error);
+      return sender.sendPlainText(`Ошибка обработки аудиосообщения: ${error.message}`);
+    }
   };
 }
 
@@ -488,6 +571,7 @@ export const SHARE_HANDLER = [
     new SaveLastMessage(),
     new CustomParamInputHandler(), // Добавляем наш новый обработчик перед CommandHandler
     new CommandHandler(),
+    new AudioHandler(), // Добавляем обработчик аудио перед обычным чат-обработчиком
     new ChatHandler()
   ])
 ];

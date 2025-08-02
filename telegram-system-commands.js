@@ -240,3 +240,22 @@ export class GetVisionModelCommandHandler {
     return sender.sendRichText(msg, "HTML");
   };
 }
+
+export class SetSpeechKeyCommandHandler {
+  command = "/setspeechkey";
+  needAuth = TELEGRAM_AUTH_CHECKER.shareModeGroup;
+  handle = async (message, subcommand, context) => {
+    const sender = MessageSender.fromMessage(context.SHARE_CONTEXT.botToken, message);
+    
+    if (!subcommand || subcommand.trim() === "") {
+      return sender.sendPlainText("Использование: /setspeechkey YOUR_GOOGLE_SPEECH_API_KEY");
+    }
+    
+    try {
+      await context.execChangeAndSave({ GOOGLE_SPEECH_API_KEY: subcommand.trim() });
+      return sender.sendPlainText("API ключ Google Speech-to-Text успешно установлен. Теперь можно отправлять аудиосообщения для распознавания.");
+    } catch (e) {
+      return sender.sendPlainText(`ОШИБКА: ${e.message}`);
+    }
+  };
+}

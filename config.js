@@ -22,6 +22,8 @@ export class OpenAIConfig {
     TOP_P = 0.9;
     IS_ONLINE = false;
     ENABLE_CACHING = true;
+    // Google Speech-to-Text API конфигурация
+    GOOGLE_SPEECH_API_KEY = [];
   }
   
 export class DefineKeys {
@@ -45,6 +47,7 @@ export class EnvironmentConfig {
     ];
     GOOGLE_API_KEY = "AIzaSyB5G-UXdHdCiygQjsIUfkIUpOtdP_00X50";
     GOOGLE_SEARCH_ENGINE_ID = "71f00319f5b8d4ff5";
+    GOOGLE_SPEECH_API_KEY = "";
     BOT_MENU_COMMANDS = ["/help", "/new", "/models", "/modelparams", "/getsystemprompt"];
     TELEGRAM_BOT_NAME = [];
     CHAT_GROUP_WHITE_LIST = [];
@@ -90,7 +93,8 @@ export const ru = {
         "getsystemprompt": "Показать текущий системный промпт",
         "clearsystemprompt": "Очистить системный промпт (вернуться к промпту по умолчанию)",
         "setvisionmodel": "Установить модель для распознавания изображений. Формат: /setvisionmodel НАЗВАНИЕ_МОДЕЛИ",
-        "getvisionmodel": "Показать текущую модель для распознавания изображений"
+        "getvisionmodel": "Показать текущую модель для распознавания изображений",
+        "setspeechkey": "Установить API ключ Google Speech-to-Text. Формат: /setspeechkey ВАШ_API_КЛЮЧ"
       },
       "new": {
         "new_chat_start": "Начат новый разговор"
